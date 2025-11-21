@@ -58,7 +58,7 @@ app.get('/api/health', (req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
-// Start server
+// Start server (Trigger deployment)
 const PORT = config.port || 5000;
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
