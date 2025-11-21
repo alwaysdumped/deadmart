@@ -28,22 +28,18 @@ app.get('/', (req, res) => {
   res.status(200).send('Live MART Backend is Running 🚀');
 });
 
-// Start server only after DB connection
-const startServer = async () => {
-  try {
-    await connectDB();
-    
-    const PORT = config.port || 5000;
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`\n🚀 Server running on port ${PORT}`);
-      console.log(`📍 API: http://0.0.0.0:${PORT}/api`);
-      console.log(`🌐 Frontend: ${config.frontendUrl}`);
-      console.log(`📧 Email Config: Host=${config.email.host}, Port=${config.email.port}, User=${config.email.user ? 'Set' : 'Missing'}\n`);
-    });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-startServer();
+// Start server immediately (Optimistic Startup for Railway)
+const PORT = config.port || 5000;
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`📍 API: http://0.0.0.0:${PORT}/api`);
+  console.log(`🌐 Frontend: ${config.frontendUrl}`);
+  console.log(`📧 Email Config: Host=${config.email.host}, Port=${config.email.port}, User=${config.email.user ? 'Set' : 'Missing'}\n`);
+  
+  // Connect to MongoDB in background
+  connectDB().catch(err => {
+    console.error('❌ MongoDB Connection Failed:', err);
+    // Optional: process.exit(1) if you want to crash on DB failure, 
+    // but keeping it alive might allow health checks to pass while retrying
+  });
+});
