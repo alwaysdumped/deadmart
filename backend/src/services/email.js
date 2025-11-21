@@ -93,27 +93,37 @@ export const sendOTPEmail = async (email, otp, name = 'User') => {
     `,
   };
 
-  try {
-    console.log(`📤 Attempting to send OTP email to: ${email}`);
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', info.messageId);
-    return { success: true, mode: 'email', messageId: info.messageId };
-  } catch (error) {
-    console.error('❌ Email sending error:', {
-      message: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response,
-    });
+  const maxAttempts = 3;
+  let lastError;
 
-    if (error.code === 'EAUTH') {
-      throw new Error('Email authentication failed. Please check your EMAIL_USER and EMAIL_PASSWORD.');
-    } else if (error.code === 'ESOCKET') {
-      throw new Error('Cannot connect to email server. Please check EMAIL_HOST and EMAIL_PORT.');
-    } else if (error.code === 'ETIMEDOUT') {
-      throw new Error('Email server connection timeout. Please check your network or firewall.');
-    } else {
-      throw new Error(`Failed to send OTP email: ${error.message}`);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      console.log(`📤 Attempting to send OTP email to: ${email} (Attempt ${attempt}/${maxAttempts})`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log('✅ Email sent successfully:', info.messageId);
+      return { success: true, mode: 'email', messageId: info.messageId };
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Email sending error (Attempt ${attempt}):`, error.message);
+      
+      if (attempt < maxAttempts) {
+        console.log('⏳ Retrying in 2 seconds...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
+  }
+
+  // If all attempts fail, throw the last error with helpful context
+  console.error('❌ All email attempts failed.');
+  const error = lastError;
+
+  if (error.code === 'EAUTH') {
+    throw new Error('Email authentication failed. Please check your EMAIL_USER and EMAIL_PASSWORD.');
+  } else if (error.code === 'ESOCKET') {
+    throw new Error('Cannot connect to email server. Please check EMAIL_HOST and EMAIL_PORT.');
+  } else if (error.code === 'ETIMEDOUT') {
+    throw new Error('Email server connection timeout. Please check your network or firewall.');
+  } else {
+    throw new Error(`Failed to send OTP email: ${error.message}`);
   }
 };
