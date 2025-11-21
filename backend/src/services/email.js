@@ -1,51 +1,50 @@
 import nodemailer from 'nodemailer';
 import config from '../config/env.js';
 
-// Ensure nodemailer is properly imported
-const { createTransport } = nodemailer;
-
-// Create transporter
 const createTransporter = () => {
-  // For development, use Ethereal (fake SMTP)
-  // For production, use real SMTP credentials from .env
-  
-  if (!config.email.user || !config.email.password) {
+  if (
+    !config.email?.user ||
+    !config.email?.password ||
+    !config.email?.host ||
+    !config.email?.port
+  ) {
     console.warn('⚠️  Email credentials not configured. Using console logging for OTPs.');
     console.warn('   Missing:', {
       user: !config.email.user ? 'EMAIL_USER' : '✓',
       password: !config.email.password ? 'EMAIL_PASSWORD' : '✓',
       host: !config.email.host ? 'EMAIL_HOST' : '✓',
-      port: !config.email.port ? 'EMAIL_PORT' : '✓'
+      port: !config.email.port ? 'EMAIL_PORT' : '✓',
     });
     return null;
   }
 
+  const port = Number(config.email.port);
+
   console.log('📧 Email configuration loaded:', {
     host: config.email.host,
-    port: config.email.port,
+    port,
     user: config.email.user,
-    secure: config.email.port === 465
+    secure: port === 465,
   });
 
-  return createTransport({
+  return nodemailer.createTransport({
     host: config.email.host,
-    port: parseInt(config.email.port),
-    secure: config.email.port == 465, // true for 465, false for other ports
+    port,
+    secure: port === 465, // true for 465, false for others
     auth: {
       user: config.email.user,
       pass: config.email.password,
     },
+    // Optional: helpful in dev if using self-signed certs
     tls: {
-      rejectUnauthorized: false // For development/testing
-    }
+      rejectUnauthorized: false,
+    },
   });
 };
 
-// Send OTP email
 export const sendOTPEmail = async (email, otp, name = 'User') => {
   const transporter = createTransporter();
 
-  // If no transporter, log to console (development mode)
   if (!transporter) {
     console.log(`\n📧 OTP Email (Console Mode):`);
     console.log(`   To: ${email}`);
@@ -104,10 +103,9 @@ export const sendOTPEmail = async (email, otp, name = 'User') => {
       message: error.message,
       code: error.code,
       command: error.command,
-      response: error.response
+      response: error.response,
     });
-    
-    // Return more specific error messages
+
     if (error.code === 'EAUTH') {
       throw new Error('Email authentication failed. Please check your EMAIL_USER and EMAIL_PASSWORD.');
     } else if (error.code === 'ESOCKET') {
