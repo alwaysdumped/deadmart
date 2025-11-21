@@ -23,46 +23,27 @@ const __dirname = path.dirname(__filename);
 // Initialize express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
-// Middleware
-app.use(cors({
-  origin: [config.frontendUrl, 'http://localhost:5173', 'http://172.20.10.3:5173'],
-  credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Serve static files from uploads directory
-// Go up two levels from src/server.js to reach root, then into uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/addresses', addressRoutes);
-app.use('/api/payment-methods', paymentMethodRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/upload', uploadRoutes);
-
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ success: true, message: 'Server is running' });
+// Root route for health checks
+app.get('/', (req, res) => {
+  res.status(200).send('Live MART Backend is Running 🚀');
 });
 
-// Error handler (must be last)
-app.use(errorHandler);
+// Start server only after DB connection
+const startServer = async () => {
+  try {
+    await connectDB();
+    
+    const PORT = config.port || 5000;
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`\n🚀 Server running on port ${PORT}`);
+      console.log(`📍 API: http://0.0.0.0:${PORT}/api`);
+      console.log(`🌐 Frontend: ${config.frontendUrl}`);
+      console.log(`📧 Email Config: Host=${config.email.host}, Port=${config.email.port}, User=${config.email.user ? 'Set' : 'Missing'}\n`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
 
-// Start server (Trigger deployment)
-const PORT = config.port || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 Server running on port ${PORT}`);
-  console.log(`📍 API: http://0.0.0.0:${PORT}/api`);
-  console.log(`🌐 Frontend: ${config.frontendUrl}`);
-  console.log(`📧 Email Config: Host=${config.email.host}, Port=${config.email.port}, User=${config.email.user ? 'Set' : 'Missing'}\n`);
-});
+startServer();
