@@ -60,9 +60,9 @@ app.use(errorHandler);
 
 // Start server (Trigger deployment)
 const PORT = config.port || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
-  console.log(`📍 API: http://localhost:${PORT}/api`);
+  console.log(`📍 API: http://0.0.0.0:${PORT}/api`);
   console.log(`🌐 Frontend: ${config.frontendUrl}`);
   console.log(`📧 Email Config: Host=${config.email.host}, Port=${config.email.port}, User=${config.email.user ? 'Set' : 'Missing'}\n`);
 });
