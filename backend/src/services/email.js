@@ -1,6 +1,9 @@
 import nodemailer from 'nodemailer';
 import config from '../config/env.js';
 
+// Ensure nodemailer is properly imported
+const { createTransport } = nodemailer;
+
 // Create transporter
 const createTransporter = () => {
   // For development, use Ethereal (fake SMTP)
@@ -24,7 +27,7 @@ const createTransporter = () => {
     secure: config.email.port === 465
   });
 
-  return nodemailer.createTransporter({
+  return createTransport({
     host: config.email.host,
     port: parseInt(config.email.port),
     secure: config.email.port == 465, // true for 465, false for other ports
