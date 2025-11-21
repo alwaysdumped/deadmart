@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { useCartStore } from '../store/cartStore';
 import { Product, Review, CartItem } from '../types';
 import { Star, ShoppingCart, ArrowLeft, ThumbsUp, Clock } from 'lucide-react';
-import ProductRecommendations from '../components/ProductRecommendations';
+import RecommendedProducts from '../components/RecommendedProducts';
+import { getRecommendedProducts } from '../utils/RecommendationEngine';
 
 const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -19,6 +20,33 @@ const ProductDetail: React.FC = () => {
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
     const [quantity, setQuantity] = useState(1);
+    const [recommendations, setRecommendations] = useState<Product[]>([]);
+
+    useEffect(() => {
+        if (id) {
+            fetchProductAndReviews();
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (product) {
+            // Track Recently Viewed
+            const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            const updatedViewed = [
+                product,
+                ...viewed.filter((p: Product) => (p.id || p._id) !== (product.id || product._id))
+            ].slice(0, 5); // Keep last 5
+            localStorage.setItem('recentlyViewed', JSON.stringify(updatedViewed));
+
+            // Fetch all products for recommendations (Client-side filtering for MVP)
+            productsAPI.getProducts().then(res => {
+                if (res.success) {
+                    const recs = getRecommendedProducts(product, res.products);
+                    setRecommendations(recs);
+                }
+            });
+        }
+    }, [product]);
 
     useEffect(() => {
         if (id) {
@@ -284,9 +312,9 @@ const ProductDetail: React.FC = () => {
 
             {/* Recommendations Section */}
             <div className="border-t border-gray-200 pt-8 mt-8">
-                <ProductRecommendations
-                    currentProductId={product.id || product._id || ''}
-                    category={product.category}
+                <RecommendedProducts
+                    products={recommendations}
+                    title="You Might Also Like"
                 />
             </div>
         </div>

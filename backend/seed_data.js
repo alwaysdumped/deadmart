@@ -27,14 +27,15 @@ const seedData = async () => {
     await Address.deleteMany({ userId: customer._id });
     await Address.create({
         userId: customer._id,
-        name: 'Home',
-        address: '123 Main St, Apartment 4B',
+        label: 'Home',
+        fullName: customer.name,
+        phone: '9876543210',
+        addressLine1: '123 Main St, Apartment 4B',
         city: 'Mumbai',
         state: 'Maharashtra',
-        zipCode: '400001',
-        phone: '9876543210',
-        isDefault: true,
-        type: 'home'
+        postalCode: '400001',
+        country: 'India',
+        isDefault: true
     });
     console.log('✅ Address created');
 
@@ -76,7 +77,7 @@ const seedData = async () => {
         unit: 'piece',
         sellerId: retailer._id,
         rating: 4.5,
-        reviews: 12
+        reviewCount: 12
       },
       {
         name: 'Smart Watch Series 5',
@@ -88,7 +89,7 @@ const seedData = async () => {
         unit: 'piece',
         sellerId: retailer._id,
         rating: 4.2,
-        reviews: 8
+        reviewCount: 8
       },
       {
         name: 'Cotton T-Shirt',
@@ -100,7 +101,7 @@ const seedData = async () => {
         unit: 'piece',
         sellerId: retailer._id,
         rating: 4.0,
-        reviews: 15,
+        reviewCount: 15,
         tags: ['Size: M', 'Color: Blue']
       },
       {
@@ -113,7 +114,7 @@ const seedData = async () => {
         unit: 'piece',
         sellerId: retailer._id,
         rating: 4.3,
-        reviews: 10,
+        reviewCount: 10,
         tags: ['Size: 32', 'Fit: Slim']
       },
       {
@@ -126,7 +127,7 @@ const seedData = async () => {
         unit: 'piece',
         sellerId: retailer._id,
         rating: 4.8,
-        reviews: 20
+        reviewCount: 20
       },
 
       // Wholesaler Products (Bulk Grains, Spices)
@@ -140,7 +141,7 @@ const seedData = async () => {
         unit: 'kg',
         sellerId: wholesaler._id,
         rating: 4.7,
-        reviews: 5
+        reviewCount: 5
       },
       {
         name: 'Whole Wheat Flour',
@@ -152,7 +153,7 @@ const seedData = async () => {
         unit: 'kg',
         sellerId: wholesaler._id,
         rating: 4.5,
-        reviews: 3
+        reviewCount: 3
       },
       {
         name: 'Turmeric Powder',
@@ -164,7 +165,7 @@ const seedData = async () => {
         unit: 'kg',
         sellerId: wholesaler._id,
         rating: 4.6,
-        reviews: 4
+        reviewCount: 4
       },
       {
         name: 'Red Chilli Powder',
@@ -176,7 +177,7 @@ const seedData = async () => {
         unit: 'kg',
         sellerId: wholesaler._id,
         rating: 4.4,
-        reviews: 2
+        reviewCount: 2
       },
       {
         name: 'Sunflower Oil',
@@ -188,7 +189,7 @@ const seedData = async () => {
         unit: 'liter',
         sellerId: wholesaler._id,
         rating: 4.3,
-        reviews: 6
+        reviewCount: 6
       }
     ];
 

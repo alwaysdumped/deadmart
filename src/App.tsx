@@ -91,9 +91,31 @@ function App() {
                                         <ProductDetail />
                                     </ProtectedRoute>
                                 } />
-                            </Router>
-                        </AuthProvider>
-                        );
+                                <Route path="/wishlist" element={
+                                    <ProtectedRoute>
+                                        <Wishlist />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/profile" element={
+                                    <ProtectedRoute>
+                                        <Profile />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/forgot-password" element={<ForgotPassword />} />
+                                <Route path="/add-product" element={
+                                    <ProtectedRoute>
+                                        <AddProduct />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            </Routes>
+                        </main>
+                        <Footer />
+                    </div>
+                </ErrorBoundary>
+            </Router>
+        </AuthProvider>
+    );
 }
 
-                        export default App;
+export default App;

@@ -5,12 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import ProductCard from '../../components/ProductCard';
 import SearchFilters, { FilterState } from '../../components/SearchFilters';
 import { PRODUCT_CATEGORIES } from '../../constants/categories';
+import RecommendedProducts from '../../components/RecommendedProducts';
 
 const CustomerDashboard: React.FC = () => {
     const { user } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
     const [filters, setFilters] = useState<FilterState>({
         category: '',
         minPrice: 0,
@@ -21,6 +23,8 @@ const CustomerDashboard: React.FC = () => {
 
     useEffect(() => {
         fetchProducts();
+        const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        setRecentlyViewed(viewed);
     }, []);
 
     const fetchProducts = async () => {
@@ -69,6 +73,13 @@ const CustomerDashboard: React.FC = () => {
                 <h1 className="text-4xl font-bold mb-2">Welcome back, {user?.name}!</h1>
                 <p className="text-primary-100 text-lg">Discover amazing products from local retailers</p>
             </div>
+
+            {/* Recently Viewed */}
+            {recentlyViewed.length > 0 && (
+                <div className="mb-12">
+                    <RecommendedProducts products={recentlyViewed} title="Recently Viewed" />
+                </div>
+            )}
 
             {/* Search and Filters */}
             <SearchFilters onSearch={setSearchTerm} onFilter={setFilters} categories={PRODUCT_CATEGORIES} />
