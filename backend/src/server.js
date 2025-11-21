@@ -12,20 +12,6 @@ import reviewRoutes from './routes/reviews.js';
 import wishlistRoutes from './routes/wishlist.js';
 import addressRoutes from './routes/addresses.js';
 import paymentMethodRoutes from './routes/paymentMethods.js';
-import express from 'express';
-import cors from 'cors';
-import connectDB from './config/db.js';
-import config from './config/env.js';
-import { errorHandler } from './middleware/errorHandler.js';
-
-// Import routes
-import authRoutes from './routes/auth.js';
-import productRoutes from './routes/products.js';
-import orderRoutes from './routes/orders.js';
-import reviewRoutes from './routes/reviews.js';
-import wishlistRoutes from './routes/wishlist.js';
-import addressRoutes from './routes/addresses.js';
-import paymentMethodRoutes from './routes/paymentMethods.js';
 import notificationRoutes from './routes/notifications.js';
 import uploadRoutes from './routes/upload.js';
 import path from 'path';
