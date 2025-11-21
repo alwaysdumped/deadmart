@@ -8,17 +8,33 @@ const createTransporter = () => {
   
   if (!config.email.user || !config.email.password) {
     console.warn('⚠️  Email credentials not configured. Using console logging for OTPs.');
+    console.warn('   Missing:', {
+      user: !config.email.user ? 'EMAIL_USER' : '✓',
+      password: !config.email.password ? 'EMAIL_PASSWORD' : '✓',
+      host: !config.email.host ? 'EMAIL_HOST' : '✓',
+      port: !config.email.port ? 'EMAIL_PORT' : '✓'
+    });
     return null;
   }
 
-  return nodemailer.createTransporter({
+  console.log('📧 Email configuration loaded:', {
     host: config.email.host,
     port: config.email.port,
-    secure: false, // true for 465, false for other ports
+    user: config.email.user,
+    secure: config.email.port === 465
+  });
+
+  return nodemailer.createTransporter({
+    host: config.email.host,
+    port: parseInt(config.email.port),
+    secure: config.email.port == 465, // true for 465, false for other ports
     auth: {
       user: config.email.user,
       pass: config.email.password,
     },
+    tls: {
+      rejectUnauthorized: false // For development/testing
+    }
   });
 };
 
@@ -76,10 +92,27 @@ export const sendOTPEmail = async (email, otp, name = 'User') => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    return { success: true, mode: 'email' };
+    console.log(`📤 Attempting to send OTP email to: ${email}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent successfully:', info.messageId);
+    return { success: true, mode: 'email', messageId: info.messageId };
   } catch (error) {
-    console.error('Email sending error:', error);
-    throw new Error('Failed to send OTP email');
+    console.error('❌ Email sending error:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response
+    });
+    
+    // Return more specific error messages
+    if (error.code === 'EAUTH') {
+      throw new Error('Email authentication failed. Please check your EMAIL_USER and EMAIL_PASSWORD.');
+    } else if (error.code === 'ESOCKET') {
+      throw new Error('Cannot connect to email server. Please check EMAIL_HOST and EMAIL_PORT.');
+    } else if (error.code === 'ETIMEDOUT') {
+      throw new Error('Email server connection timeout. Please check your network or firewall.');
+    } else {
+      throw new Error(`Failed to send OTP email: ${error.message}`);
+    }
   }
 };
