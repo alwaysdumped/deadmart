@@ -23,23 +23,47 @@ const __dirname = path.dirname(__filename);
 // Initialize express app
 const app = express();
 
+// DEBUG MODE: DB Connection temporarily commented out
+// connectDB(); 
+
+// Middleware
+app.use(cors({
+  origin: [config.frontendUrl, 'http://localhost:5173', 'http://172.20.10.3:5173'],
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// DEBUG MODE: Routes temporarily commented out to isolate crash
+// app.use('/api/auth', authRoutes);
+// app.use('/api/products', productRoutes);
+// app.use('/api/orders', orderRoutes);
+// app.use('/api/reviews', reviewRoutes);
+// app.use('/api/wishlist', wishlistRoutes);
+// app.use('/api/addresses', addressRoutes);
+// app.use('/api/payment-methods', paymentMethodRoutes);
+// app.use('/api/notifications', notificationRoutes);
+// app.use('/api/upload', uploadRoutes);
+
 // Root route for health checks
 app.get('/', (req, res) => {
-  res.status(200).send('Live MART Backend is Running 🚀');
+  res.status(200).send('DEBUG MODE: Live MART Backend is Running 🚀');
 });
 
-// Start server immediately (Optimistic Startup for Railway)
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ success: true, message: 'Debug Server is running' });
+});
+
+// Error handler (must be last)
+app.use(errorHandler);
+
+// Start server immediately
 const PORT = config.port || 5000;
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 DEBUG Server running on port ${PORT}`);
   console.log(`📍 API: http://0.0.0.0:${PORT}/api`);
   console.log(`🌐 Frontend: ${config.frontendUrl}`);
-  console.log(`📧 Email Config: Host=${config.email.host}, Port=${config.email.port}, User=${config.email.user ? 'Set' : 'Missing'}\n`);
-  
-  // Connect to MongoDB in background
-  connectDB().catch(err => {
-    console.error('❌ MongoDB Connection Failed:', err);
-    // Optional: process.exit(1) if you want to crash on DB failure, 
-    // but keeping it alive might allow health checks to pass while retrying
-  });
 });
